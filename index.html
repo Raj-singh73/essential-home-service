@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeServe India - Affordable Home Care Services</title>
+
+	<link rel="stylesheet" href="designthinking.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-top">
+                <div class="logo-section" onclick="goToHome()">
+                    <h1>🏠 HomeServe India</h1>
+                </div>
+                <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+                <nav class="nav-menu" id="navMenu">
+                    <button class="nav-item" onclick="openAboutModal()">
+                        ℹ️ About
+                    </button>
+                    <button class="nav-item" onclick="openProfileModal()">
+                        👤 Profile
+                    </button>
+                    <button class="nav-item" onclick="openContactModal()">
+                        📞 Contact
+                    </button>
+                    <button class="nav-item" onclick="openFeedbackModal()">
+                        ⭐ Feedback
+                    </button>
+                </nav>
+            </div>
+            <p class="tagline">Affordable Home Care Services for Every Indian Family</p>
+        </header>
+
+        <div class="search-container">
+            <input type="text" class="search-box" id="searchBox" autocomplete="off" placeholder="🔍 Search for services... (e.g., cleaning, plumber, cooking, AC repair)" oninput="searchServices()">
+            <div class="search-results-info" id="searchInfo"></div>
+        </div>
+
+        <div class="services-grid" id="servicesGrid"></div>
+
+        <div class="cart-section">
+            <div class="cart-header">
+                <h2>🛒 Your Booking Cart</h2>
+                <span id="cartCount">0 items</span>
+            </div>
+            <div id="cartItems" class="cart-items"></div>
+            <div id="cartEmpty" class="empty-cart">Your cart is empty. Add services to get started!</div>
+            <div id="cartTotal" style="display: none;">
+                <div class="cart-total">
+                    <span>Total Amount:</span>
+                    <span id="totalAmount">₹0</span>
+                </div>
+                <button class="checkout-btn" onclick="openCheckoutModal()">Proceed to Checkout</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Book Service</h2>
+                <button class="close-btn" onclick="closeBookingModal()">&times;</button>
+            </div>
+            <div id="bookingStep1" class="booking-step">
+                <form id="bookingForm">
+                    <div class="form-group">
+                        <label>Service:</label>
+                        <input type="text" id="modalServiceName" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Date:</label>
+                        <input type="date" id="serviceDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Time Slot:</label>
+                        <select id="timeSlot" required onchange="updateTimeSlots()">
+                            <option value="">Select time</option>
+                            <option value="12:00 AM - 3:00 AM">🌙 12:00 AM - 3:00 AM (Midnight)</option>
+                            <option value="3:00 AM - 6:00 AM">🌙 3:00 AM - 6:00 AM (Early Morning)</option>
+                            <option value="6:00 AM - 9:00 AM">🌅 6:00 AM - 9:00 AM (Morning)</option>
+                            <option value="9:00 AM - 12:00 PM">☀️ 9:00 AM - 12:00 PM (Late Morning)</option>
+                            <option value="12:00 PM - 3:00 PM">☀️ 12:00 PM - 3:00 PM (Afternoon)</option>
+                            <option value="3:00 PM - 6:00 PM">🌤️ 3:00 PM - 6:00 PM (Evening)</option>
+                            <option value="6:00 PM - 9:00 PM">🌆 6:00 PM - 9:00 PM (Night)</option>
+                            <option value="9:00 PM - 12:00 AM">🌙 9:00 PM - 12:00 AM (Late Night)</option>
+                        </select>
+                        <div id="serviceSlotInfo" style="display: none; margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 5px; font-size: 13px; color: #856404;">
+                            <strong id="serviceSlotMessage"></strong>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Special Instructions:</label>
+                        <textarea id="instructions" placeholder="Any specific requirements..."></textarea>
+                    </div>
+                    <button type="button" class="submit-btn" onclick="proceedToPayment()">Next: Payment Method</button>
+                </form>
+            </div>
+            <div id="bookingStep2" class="booking-step" style="display: none;">
+                <h3>Select Payment Method</h3>
+                <div class="payment-options">
+                    <label class="payment-option">
+                        <input type="radio" name="paymentMethod" value="cash" checked onchange="handlePaymentChange()">
+                        <span class="payment-label">💵 Cash on Service</span>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="paymentMethod" value="upi" onchange="handlePaymentChange()">
+                        <span class="payment-label">📱 UPI Payment</span>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="paymentMethod" value="card" onchange="handlePaymentChange()">
+                        <span class="payment-label">💳 Card Payment</span>
+                    </label>
+                </div>
+                <div id="qrCodeContainer" style="display: none; text-align: center; margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+                    <p style="margin-bottom: 15px; font-weight: bold; color: #FF6B35; font-size: 16px;">Scan QR Code to Pay via UPI</p>
+                    <div style="display: flex; justify-content: center; margin-bottom: 15px;">
+                        <div id="qrCode"></div>
+                    </div>
+                    <p style="margin-bottom: 10px; font-size: 14px; font-weight: 600; color: #2b2b2b;">Amount: ₹<span id="qrAmount">0</span></p>
+                    <div style="background: #FFE8D6; padding: 12px; border-radius: 6px; margin-top: 15px; border-left: 4px solid #FF6B35;">
+                        <p style="margin: 0 0 8px 0; font-size: 12px; color: #666;">Or enter manually:</p>
+                        <p style="margin: 0; font-size: 16px; font-weight: 700; color: #1a1a1a; word-break: break-all;">rajs64796@oksbi</p>
+                    </div>
+                </div>
+                <div id="cardMessage" style="display: none; text-align: center; margin: 20px 0; padding: 20px; background: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
+                    <p style="font-size: 16px; color: #856404; margin: 0;"><strong>No card option as of now 💳</strong></p>
+                    <p style="font-size: 14px; color: #856404; margin-top: 10px;">Card payment option coming soon!</p>
+                </div>
+                <div class="button-group" style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="submit-btn" onclick="backToSlotSelection()" style="flex: 1;">Back</button>
+                    <button class="submit-btn" onclick="confirmPayment()" style="flex: 1;">Confirm Payment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmationModal" class="modal">
+        <div class="modal-content" style="text-align: center; max-width: 400px;">
+            <div style="font-size: 60px; margin-bottom: 20px;">✅</div>
+            <h2 style="color: #FF6B35; font-size: 24px; margin-bottom: 20px;">Booking Confirmed!</h2>
+            <div id="confirmationDetails" style="margin: 20px 0; text-align: left; background: #FFE8D6; padding: 20px; border-radius: 8px; border-left: 4px solid #FF6B35; color: #1a1a1a; font-weight: 500;"></div>
+            <p style="color: #FF6B35; font-size: 15px; font-weight: 600; margin-top: 15px;">Our service provider will contact you shortly.</p>
+            <button class="submit-btn" onclick="closeConfirmationModal()" style="width: 100%;">Done</button>
+        </div>
+    </div>
+
+    <div id="checkoutModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Checkout</h2>
+                <button class="close-btn" onclick="closeCheckoutModal()">&times;</button>
+            </div>
+            <div id="successMessage" style="display: none;" class="success-message"></div>
+            <form id="checkoutForm">
+                <div class="form-group">
+                    <label>Full Name:</label>
+                    <input type="text" id="customerName" required>
+                </div>
+                <div class="form-group">
+                    <label>Mobile Number:</label>
+                    <input type="tel" id="customerPhone" pattern="[0-9]{10}" required placeholder="10 digit number">
+                </div>
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="customerEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Full Address:</label>
+                    <textarea id="customerAddress" required placeholder="House/Flat No, Street, Area, City, Pincode"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Payment Method:</label>
+                    <select id="paymentMethod" required>
+                        <option value="">Select payment method</option>
+                        <option value="cash">Cash on Service</option>
+                        <option value="upi">UPI Payment</option>
+                        <option value="card">Card Payment</option>
+                    </select>
+                </div>
+                <div class="cart-total" style="margin-bottom: 15px;">
+                    <span>Total Amount:</span>
+                    <span id="checkoutTotal">₹0</span>
+                </div>
+                <button type="submit" class="submit-btn">Confirm Booking</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>👤 My Profile</h2>
+                <button class="close-btn" onclick="closeProfileModal()">&times;</button>
+            </div>
+            <form id="profileForm">
+                <div class="form-group">
+                    <label>Full Name:</label>
+                    <input type="text" id="profileName" placeholder="Enter your name">
+                </div>
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="profileEmail" placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label>Mobile:</label>
+                    <input type="tel" id="profilePhone" placeholder="Enter 10 digit mobile">
+                </div>
+                <div class="form-group">
+                    <label>Address:</label>
+                    <textarea id="profileAddress" placeholder="Your complete address"></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Save Profile</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="contactModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📞 Contact Us</h2>
+                <button class="close-btn" onclick="closeContactModal()">&times;</button>
+            </div>
+            <div style="padding: 20px; color: #1a1a1a;">
+                <h3 style="color: #FF6B35; margin-bottom: 15px; font-size: 18px;">Get in Touch</h3>
+                <p style="margin-bottom: 10px; color: #2b2b2b; font-size: 15px;"><strong style="color: #FF6B35;">📧 Email:</strong> support@homeserveindia.com</p>
+                <p style="margin-bottom: 10px; color: #2b2b2b; font-size: 15px;"><strong style="color: #FF6B35;">📱 Phone:</strong> +91 1800-123-4567 (Toll Free)</p>
+                <p style="margin-bottom: 10px; color: #2b2b2b; font-size: 15px;"><strong style="color: #FF6B35;">💬 WhatsApp:</strong> +91 98765-43210</p>
+                <p style="margin-bottom: 10px; color: #2b2b2b; font-size: 15px;"><strong style="color: #FF6B35;">🕒 Hours:</strong> Mon-Sun, 8:00 AM - 10:00 PM</p>
+                <p style="margin-bottom: 20px; color: #2b2b2b; font-size: 15px;"><strong style="color: #FF6B35;">📍 Address:</strong> 123 Service Street, ghaziabad, Uttar pradesh 201001</p>
+                
+                <h3 style="color: #FF6B35; margin-bottom: 10px; font-size: 18px;">Follow Us</h3>
+                <div style="display: flex; gap: 15px;">
+                    <span style="font-size: 24px; cursor: pointer;">📘</span>
+                    <span style="font-size: 24px; cursor: pointer;">📷</span>
+                    <span style="font-size: 24px; cursor: pointer;">🐦</span>
+                    <span style="font-size: 24px; cursor: pointer;">💼</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="feedbackModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⭐ Send Feedback</h2>
+                <button class="close-btn" onclick="closeFeedbackModal()">&times;</button>
+            </div>
+            <form id="feedbackForm">
+                <div class="form-group">
+                    <label>Your Name:</label>
+                    <input type="text" id="feedbackName" required>
+                </div>
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="feedbackEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Rating:</label>
+                    <select id="feedbackRating" required>
+                        <option value="">Select rating</option>
+                        <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+                        <option value="4">⭐⭐⭐⭐ Very Good</option>
+                        <option value="3">⭐⭐⭐ Good</option>
+                        <option value="2">⭐⭐ Fair</option>
+                        <option value="1">⭐ Poor</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Your Feedback:</label>
+                    <textarea id="feedbackMessage" required placeholder="Tell us about your experience..."></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Submit Feedback</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="aboutModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>ℹ️ About HomeServe India</h2>
+                <button class="close-btn" onclick="closeAboutModal()">&times;</button>
+            </div>
+            <div style="padding: 20px; line-height: 1.6; color: #1a1a1a;">
+                <p style="margin-bottom: 15px; color: #2b2b2b; font-size: 15px;"><strong style="color: #FF6B35;">HomeServe India</strong> is your trusted partner for all home care services. We connect you with verified and skilled professionals across India.</p>
+                
+                <h3 style="color: #FF6B35; margin: 20px 0 10px 0; font-size: 18px;">Our Mission</h3>
+                <p style="margin-bottom: 15px; color: #2b2b2b; font-size: 15px;">To make quality home services affordable and accessible to every Indian family, from metro cities to tier-3 towns.</p>
+                
+                <h3 style="color: #FF6B35; margin: 20px 0 10px 0; font-size: 18px;">Why Choose Us?</h3>
+                <ul style="margin-left: 20px; margin-bottom: 15px; color: #2b2b2b;">
+                    <li style="margin-bottom: 8px; font-size: 15px;">✓ Verified & Trained Professionals</li>
+                    <li style="margin-bottom: 8px; font-size: 15px;">✓ Affordable Pricing for Middle Class</li>
+                    <li style="margin-bottom: 8px; font-size: 15px;">✓ 24/7 Customer Support</li>
+                    <li style="margin-bottom: 8px; font-size: 15px;">✓ Safe & Secure Payments</li>
+                    <li style="margin-bottom: 8px; font-size: 15px;">✓ Service Guarantee</li>
+                    <li style="margin-bottom: 8px; font-size: 15px;">✓ Available Pan-India</li>
+                </ul>
+                
+                <h3 style="color: #FF6B35; margin: 20px 0 10px 0; font-size: 18px;">Our Services</h3>
+                <p style="color: #2b2b2b; font-size: 15px;">We offer 12+ essential home services including cleaning, cooking, childcare, repairs, and maintenance - all at your doorstep!</p>
+            </div>
+        </div>
+    </div>
+
+	<script src="designthinking.js"></script>
+
+</body>
+</html>
